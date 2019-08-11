@@ -74,12 +74,11 @@ class Application:
 
             request.match_info = match_info
 
-            resp = None
             if self._middlewares:
-                for mwares in self._middlewares:
-                    resp = await mwares(request, handler)
-            else:
-                resp = await handler(request)
+							for md in self._middlewares:
+									handler = partial(md, handler=handler)
+
+						resp = await handler(request)
         except HTTPException as exc:
             resp = exc
         except Exception as exc:
