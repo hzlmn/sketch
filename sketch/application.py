@@ -3,7 +3,8 @@ import asyncio
 import signal
 from functools import partialmethod, wraps
 
-from .exceptions import HTTPException, format_exception
+from .exceptions import HTTPException
+from .helpers import format_exception
 from .response import Response
 from .router import UrlDispatcher
 from .server import Server
@@ -41,6 +42,7 @@ class Application:
 
     def route(self, path, method="GET"):
         """Helper for handler registration"""
+
         @wraps(func)
         def handle(func):
             self._router.add_route(method, path, func)
@@ -75,10 +77,10 @@ class Application:
             request.match_info = match_info
 
             if self._middlewares:
-							for md in self._middlewares:
-									handler = partial(md, handler=handler)
-
-						resp = await handler(request)
+                for md in self._middlewares:
+                    handler = partial(md, handler=handler)
+		
+            resp = await handler(request)
         except HTTPException as exc:
             resp = exc
         except Exception as exc:
