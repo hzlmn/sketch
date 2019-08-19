@@ -15,7 +15,7 @@ class UrlDispatcher:
             match = re.match(pattern, request.url.raw_path)
 
             if match is None:
-                raise HTTPNotFound(reason=f"Could not find {request.url.raw_path}")
+                continue
 
             if method != request.method:
                 raise HTTPNotFound(
@@ -23,8 +23,12 @@ class UrlDispatcher:
                 )
 
             return match.groupdict(), handler
+        raise HTTPNotFound(reason=f"Could not find {request.url.raw_path}")
 
     def _format_pattern(self, path):
+        if not re.search(self._param_regex, path):
+            return f'^{path}$'
+        
         regex = r""
         last_pos = 0
 
@@ -34,7 +38,7 @@ class UrlDispatcher:
             regex += r"(?P<%s>\w+)" % param
             last_pos = match.end()
 
-        return regex
+        return f'^{regex}$'
 
     def add_route(self, method, path, handler):
         pattern = self._format_pattern(path)
